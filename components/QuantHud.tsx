@@ -25,7 +25,7 @@ import {
 export default function QuantHUDv2() {
   const [isListening, setIsListening] = useState(false)
   const [transcript, setTranscript] = useState("")
-  const [projects, setProjects] = useState([
+  const [projects] = useState([
     {
       id: "1",
       name: "Structural Steel - Building A",
@@ -48,7 +48,7 @@ export default function QuantHUDv2() {
     }
   ])
 
-  const [recentItems, setRecentItems] = useState([
+  const [recentItems] = useState([
     {
       id: "1",
       drawing: "DWG-001",
@@ -234,7 +234,7 @@ export default function QuantHUDv2() {
               <div>
                 <h4 className="font-semibold mb-2">Voice Commands</h4>
                 <p className="text-sm text-muted-foreground">
-                  Click the microphone to start voice input. Say commands like "Add beam W12x40" or "Show project summary"
+                  Click the microphone to start voice input. Say commands like &ldquo;Add beam W12x40&rdquo; or &ldquo;Show project summary&rdquo;
                 </p>
               </div>
               <div>
