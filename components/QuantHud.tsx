@@ -2,15 +2,19 @@
 
 import { useState } from 'react'
 import { Button } from "@/components/ui/button"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { 
   Mic, 
   Trash2, 
-  Repeat
+  Repeat,
+  Maximize2,
+  Minimize2
 } from "lucide-react"
 
 export default function QuantHUDv2() {
   const [isListening, setIsListening] = useState(false)
   const [transcript, setTranscript] = useState("")
+  const [density, setDensity] = useState<'compact' | 'comfortable'>('compact')
   
   const [projects] = useState([
     {
@@ -90,7 +94,24 @@ export default function QuantHUDv2() {
     return { totalItems, totalHours, avgRate, totalRevenue }
   }
 
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(value)
+  }
+
+  const formatNumber = (value: number, decimals = 2) => {
+    return new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals
+    }).format(value)
+  }
+
   const totals = calculateTotals()
+  const padding = density === 'compact' ? 'p-2' : 'p-4'
 
   return (
     <div className="min-h-screen bg-[#0a1525] text-gray-100 p-6">
@@ -100,95 +121,148 @@ export default function QuantHUDv2() {
       </div>
 
       {/* Live Estimate Bar */}
-      <div className="mb-6 bg-[#0f1f35] border border-cyan-900/30 rounded-lg p-4">
-        <div className="text-xs text-cyan-400 mb-2 tracking-wide">LIVE ESTIMATE</div>
-        <div className="flex items-center gap-8 flex-wrap">
-          <div>
-            <span className="text-xs text-gray-400">TONS</span>
-            <div className="text-cyan-400 font-mono text-lg">0.247</div>
-          </div>
-          <div>
-            <span className="text-xs text-gray-400">MH/Ton</span>
-            <div className="text-cyan-400 font-mono text-lg">11.01</div>
-          </div>
-          <div>
-            <span className="text-xs text-gray-400">WELD IN</span>
-            <div className="text-cyan-400 font-mono text-lg">72</div>
-          </div>
-          <div>
-            <span className="text-xs text-gray-400">MH (Total)</span>
-            <div className="text-cyan-400 font-mono text-lg">2.72</div>
-          </div>
-          <div>
-            <span className="text-xs text-gray-400">Labor $</span>
-            <div className="text-cyan-400 font-mono text-lg">${totals.totalRevenue.toFixed(2)}</div>
-          </div>
-          <div>
-            <span className="text-xs text-gray-400">Rate</span>
-            <div className="text-cyan-400 font-mono text-lg">{totals.avgRate}/hr</div>
-          </div>
-          <div className="flex-1">
-            <span className="text-xs text-gray-400">CONF</span>
-            <div className="h-2 bg-gray-700 rounded-full mt-1 overflow-hidden">
-              <div className="h-full bg-cyan-400" style={{width: '85%'}}></div>
+      <div className="mb-6 bg-[#0f1f35] border border-cyan-900/30 rounded-lg overflow-hidden">
+        <div className="bg-[#0a1525] px-4 py-2 border-b border-cyan-900/30">
+          <div className="text-xs text-cyan-400 tracking-wide font-semibold">LIVE ESTIMATE</div>
+        </div>
+        <div className="p-4" aria-live="polite" aria-atomic="true">
+          <div className="flex items-center gap-8 flex-wrap">
+            <div>
+              <span className="text-xs text-gray-400">TONS</span>
+              <div className="text-cyan-400 font-mono text-lg">{formatNumber(0.247, 3)}</div>
+            </div>
+            <div>
+              <span className="text-xs text-gray-400">MH/Ton</span>
+              <div className="text-cyan-400 font-mono text-lg">{formatNumber(11.01, 2)}</div>
+            </div>
+            <div>
+              <span className="text-xs text-gray-400">WELD IN</span>
+              <div className="text-cyan-400 font-mono text-lg">72</div>
+            </div>
+            <div>
+              <span className="text-xs text-gray-400">MH (Total)</span>
+              <div className="text-cyan-400 font-mono text-lg">{formatNumber(2.72, 2)}</div>
+            </div>
+            <div>
+              <span className="text-xs text-gray-400">Labor $</span>
+              <div className="text-cyan-400 font-mono text-lg">{formatCurrency(totals.totalRevenue)}</div>
+            </div>
+            <div className="ml-auto">
+              <span className="text-xs text-gray-400">Rate</span>
+              <div className="text-cyan-400 font-mono text-lg">${formatNumber(totals.avgRate, 0)}/hr</div>
+            </div>
+            <div className="w-48">
+              <span className="text-xs text-gray-400">CONF</span>
+              <div className="h-2 bg-gray-700 rounded-full mt-1 overflow-hidden">
+                <div className="h-full bg-cyan-400 transition-all" style={{width: '85%'}}></div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Main Table */}
-      <div className="mb-24 bg-[#0f1f35] border border-cyan-900/30 rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-[#0a1525] border-b border-cyan-900/30">
-              <tr className="text-cyan-400 text-xs uppercase">
-                <th className="p-3 text-left font-medium">
-                  <input type="checkbox" className="mr-2" />
-                </th>
-                <th className="p-3 text-left font-medium">DRAWING</th>
-                <th className="p-3 text-left font-medium">DETAIL</th>
-                <th className="p-3 text-left font-medium">ITEM</th>
-                <th className="p-3 text-left font-medium">SHAPE</th>
-                <th className="p-3 text-left font-medium">SIZE</th>
-                <th className="p-3 text-left font-medium">LENGTH</th>
-                <th className="p-3 text-left font-medium">QTY</th>
-                <th className="p-3 text-left font-medium">WEIGHT (LB)</th>
-                <th className="p-3 text-left font-medium">WELD (IN)</th>
-                <th className="p-3 text-left font-medium">MH TOTAL</th>
-                <th className="p-3 text-left font-medium">LABOR COST</th>
-                <th className="p-3 text-left font-medium">CATEGORY</th>
-                <th className="p-3 text-left font-medium">ACTIONS</th>
-              </tr>
-            </thead>
-            <tbody className="text-gray-300">
-              {recentItems.map((item, idx) => (
-                <tr key={item.id} className="border-b border-cyan-900/20 hover:bg-cyan-950/20">
-                  <td className="p-3">
-                    <input type="checkbox" />
-                  </td>
-                  <td className="p-3 font-mono text-cyan-400">{item.drawing}</td>
-                  <td className="p-3">{item.detail}</td>
-                  <td className="p-3">Member</td>
-                  <td className="p-3">{item.shape}</td>
-                  <td className="p-3">{item.size}</td>
-                  <td className="p-3">{item.lengthFt ? `${item.lengthFt}'-0"` : '—'}</td>
-                  <td className="p-3">{item.qty}</td>
-                  <td className="p-3">{idx === 0 ? 468 : idx === 1 ? 20.4 : 5.1}</td>
-                  <td className="p-3">{idx === 0 ? 0 : idx === 1 ? 48 : 24}</td>
-                  <td className="p-3 font-mono">{(item.totalMin / 60).toFixed(2)}</td>
-                  <td className="p-3">${(item.totalMin / 60 * totals.avgRate).toFixed(2)}</td>
-                  <td className="p-3">{item.category}</td>
-                  <td className="p-3">
-                    <button className="px-3 py-1 bg-cyan-900/30 hover:bg-cyan-900/50 text-cyan-400 rounded text-xs">
-                      Breakdown
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      {/* Table Controls */}
+      <div className="mb-4 flex justify-end">
+        <button
+          onClick={() => setDensity(density === 'compact' ? 'comfortable' : 'compact')}
+          className="flex items-center gap-2 px-3 py-1.5 bg-cyan-900/20 border border-cyan-900/30 text-cyan-400 hover:bg-cyan-900/40 rounded text-xs transition-colors"
+          aria-label="Toggle table density"
+        >
+          {density === 'compact' ? <Maximize2 className="h-3 w-3" /> : <Minimize2 className="h-3 w-3" />}
+          {density === 'compact' ? 'Comfortable' : 'Compact'}
+        </button>
       </div>
+
+      {/* Main Table */}
+      <TooltipProvider>
+        <div className="mb-24 bg-[#0f1f35] border border-cyan-900/30 rounded-lg overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-[#0a1525] border-b border-cyan-900/30 sticky top-0 z-10">
+                <tr className="text-cyan-400 text-xs uppercase">
+                  <th className={`${padding} text-left font-medium sticky left-0 bg-[#0a1525] z-20`}>
+                    <input type="checkbox" className="mr-2" aria-label="Select all rows" />
+                  </th>
+                  <th className={`${padding} text-left font-medium sticky left-12 bg-[#0a1525] z-20`}>DRAWING</th>
+                  <th className={`${padding} text-left font-medium sticky left-32 bg-[#0a1525] z-20`}>DETAIL</th>
+                  <th className={`${padding} text-left font-medium`}>ITEM</th>
+                  <th className={`${padding} text-left font-medium`}>SHAPE</th>
+                  <th className={`${padding} text-left font-medium`}>SIZE</th>
+                  <th className={`${padding} text-right font-medium`}>LENGTH</th>
+                  <th className={`${padding} text-right font-medium`}>QTY</th>
+                  <th className={`${padding} text-right font-medium`}>WEIGHT (LB)</th>
+                  <th className={`${padding} text-right font-medium`}>WELD (IN)</th>
+                  <th className={`${padding} text-right font-medium`}>
+                    <Tooltip>
+                      <TooltipTrigger className="underline decoration-dotted">MH TOTAL</TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-xs">Total labor minutes ÷ 60</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </th>
+                  <th className={`${padding} text-right font-medium`}>
+                    <Tooltip>
+                      <TooltipTrigger className="underline decoration-dotted">LABOR COST</TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-xs">MH Total × Shop Rate</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </th>
+                  <th className={`${padding} text-left font-medium`}>CATEGORY</th>
+                  <th className={`${padding} text-left font-medium`}>ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody className="text-gray-300">
+                {recentItems.map((item, idx) => (
+                  <tr 
+                    key={item.id} 
+                    className={`border-b border-cyan-900/20 hover:bg-cyan-500/10 hover:shadow-[0_0_10px_rgba(6,182,212,0.1)] transition-all ${
+                      idx % 2 === 1 ? 'bg-white/[0.02]' : ''
+                    }`}
+                  >
+                    <td className={`${padding} sticky left-0 bg-inherit z-10`}>
+                      <input type="checkbox" aria-label={`Select ${item.drawing}`} />
+                    </td>
+                    <td className={`${padding} font-mono text-cyan-400 sticky left-12 bg-inherit z-10`}>{item.drawing}</td>
+                    <td className={`${padding} sticky left-32 bg-inherit z-10`}>{item.detail}</td>
+                    <td className={padding}>Member</td>
+                    <td className={padding}>{item.shape}</td>
+                    <td className={padding}>{item.size}</td>
+                    <td className={`${padding} text-right`}>{item.lengthFt ? `${item.lengthFt}'-0"` : '—'}</td>
+                    <td className={`${padding} text-right font-mono`}>{item.qty}</td>
+                    <td className={`${padding} text-right font-mono`}>
+                      {formatNumber(idx === 0 ? 468 : idx === 1 ? 20.4 : 5.1, 1)}
+                    </td>
+                    <td className={`${padding} text-right font-mono`}>{idx === 0 ? 0 : idx === 1 ? 48 : 24}</td>
+                    <td className={`${padding} text-right font-mono text-cyan-300`}>
+                      {formatNumber(item.totalMin / 60, 2)}
+                    </td>
+                    <td className={`${padding} text-right font-mono text-green-400`}>
+                      {formatCurrency(item.totalMin / 60 * totals.avgRate)}
+                    </td>
+                    <td className={padding}>{item.category}</td>
+                    <td className={padding}>
+                      <button 
+                        className="px-3 py-1 bg-cyan-900/30 hover:bg-cyan-900/50 text-cyan-400 rounded text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault()
+                            // Handle breakdown action
+                          }
+                        }}
+                        aria-label={`View breakdown for ${item.drawing}`}
+                      >
+                        Breakdown
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </TooltipProvider>
 
       {/* Bottom Transcript Section */}
       <div className="fixed bottom-0 left-0 right-0 bg-[#0a1525] border-t border-cyan-900/30 p-4">
