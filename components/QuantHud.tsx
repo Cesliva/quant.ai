@@ -2,29 +2,16 @@
 
 import { useState } from 'react'
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Progress } from "@/components/ui/progress"
 import { 
   Mic, 
   Trash2, 
-  Save, 
-  Repeat, 
-  FileSpreadsheet, 
-  FileText, 
-  HelpCircle,
-  TrendingUp,
-  DollarSign,
-  Clock,
-  Package,
-  Plus
+  Repeat
 } from "lucide-react"
 
 export default function QuantHUDv2() {
   const [isListening, setIsListening] = useState(false)
   const [transcript, setTranscript] = useState("")
+  
   const [projects] = useState([
     {
       id: "1",
@@ -106,239 +93,154 @@ export default function QuantHUDv2() {
   const totals = calculateTotals()
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-6 lg:p-8">
+    <div className="min-h-screen bg-[#0a1525] text-gray-100 p-6">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-4xl font-bold mb-2">Quant HUD v2.5</h1>
-        <p className="text-muted-foreground">Real-time Fabrication Project Dashboard</p>
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold tracking-wider text-cyan-400">QUANT // HUD</h1>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Projects</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{projects.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {totals.totalItems} total items
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Hours</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totals.totalHours.toFixed(1)}</div>
-            <p className="text-xs text-muted-foreground">
-              Across all projects
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Shop Rate</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${totals.avgRate.toFixed(0)}/hr</div>
-            <p className="text-xs text-muted-foreground">
-              Per labor hour
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${totals.totalRevenue.toLocaleString('en-US', { maximumFractionDigits: 0 })}</div>
-            <p className="text-xs text-muted-foreground">
-              Estimated labor value
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Voice Input Section */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Voice Command / Quick Entry</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-2">
-            <Input 
-              placeholder="Type or use voice to add items..." 
-              value={transcript}
-              onChange={(e) => setTranscript(e.target.value)}
-              className="flex-1"
-            />
-            <Button 
-              variant={isListening ? "destructive" : "default"}
-              size="icon"
-              onClick={handleVoiceInput}
-            >
-              <Mic className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="icon">
-              <Plus className="h-4 w-4" />
-            </Button>
+      {/* Live Estimate Bar */}
+      <div className="mb-6 bg-[#0f1f35] border border-cyan-900/30 rounded-lg p-4">
+        <div className="text-xs text-cyan-400 mb-2 tracking-wide">LIVE ESTIMATE</div>
+        <div className="flex items-center gap-8 flex-wrap">
+          <div>
+            <span className="text-xs text-gray-400">TONS</span>
+            <div className="text-cyan-400 font-mono text-lg">0.247</div>
           </div>
-          {isListening && (
-            <div className="mt-4">
-              <Progress value={33} className="mb-2" />
-              <p className="text-sm text-muted-foreground">Listening for voice input...</p>
+          <div>
+            <span className="text-xs text-gray-400">MH/Ton</span>
+            <div className="text-cyan-400 font-mono text-lg">11.01</div>
+          </div>
+          <div>
+            <span className="text-xs text-gray-400">WELD IN</span>
+            <div className="text-cyan-400 font-mono text-lg">72</div>
+          </div>
+          <div>
+            <span className="text-xs text-gray-400">MH (Total)</span>
+            <div className="text-cyan-400 font-mono text-lg">2.72</div>
+          </div>
+          <div>
+            <span className="text-xs text-gray-400">Labor $</span>
+            <div className="text-cyan-400 font-mono text-lg">${totals.totalRevenue.toFixed(2)}</div>
+          </div>
+          <div>
+            <span className="text-xs text-gray-400">Rate</span>
+            <div className="text-cyan-400 font-mono text-lg">{totals.avgRate}/hr</div>
+          </div>
+          <div className="flex-1">
+            <span className="text-xs text-gray-400">CONF</span>
+            <div className="h-2 bg-gray-700 rounded-full mt-1 overflow-hidden">
+              <div className="h-full bg-cyan-400" style={{width: '85%'}}></div>
             </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Action Buttons */}
-      <div className="flex flex-wrap gap-2 mb-6">
-        <Button variant="default">
-          <Save className="mr-2 h-4 w-4" />
-          Save Project
-        </Button>
-        <Button variant="outline">
-          <Repeat className="mr-2 h-4 w-4" />
-          Sync Data
-        </Button>
-        <Button variant="outline">
-          <FileSpreadsheet className="mr-2 h-4 w-4" />
-          Export Excel
-        </Button>
-        <Button variant="outline">
-          <FileText className="mr-2 h-4 w-4" />
-          Generate Report
-        </Button>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button variant="outline">
-              <HelpCircle className="mr-2 h-4 w-4" />
-              Help
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Quant HUD Help</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <h4 className="font-semibold mb-2">Voice Commands</h4>
-                <p className="text-sm text-muted-foreground">
-                  Click the microphone to start voice input. Say commands like &ldquo;Add beam W12x40&rdquo; or &ldquo;Show project summary&rdquo;
-                </p>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">Quick Entry</h4>
-                <p className="text-sm text-muted-foreground">
-                  Type directly into the input field to quickly add items to your current project
-                </p>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">Keyboard Shortcuts</h4>
-                <p className="text-sm text-muted-foreground">
-                  Ctrl+S: Save | Ctrl+E: Export | Ctrl+N: New Item
-                </p>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-        <Button variant="destructive" className="ml-auto">
-          <Trash2 className="mr-2 h-4 w-4" />
-          Clear All
-        </Button>
+          </div>
+        </div>
       </div>
 
-      {/* Projects Table */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Active Projects</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Project Name</TableHead>
-                <TableHead>Client</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead className="text-right">Shop Rate</TableHead>
-                <TableHead className="text-right">Items</TableHead>
-                <TableHead className="text-right">Total Hours</TableHead>
-                <TableHead className="text-right">Est. Revenue</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {projects.map((project) => (
-                <TableRow key={project.id} className="cursor-pointer hover:bg-muted/50">
-                  <TableCell className="font-medium">{project.name}</TableCell>
-                  <TableCell>{project.client}</TableCell>
-                  <TableCell>{project.location}</TableCell>
-                  <TableCell className="text-right">${project.shopRate}/hr</TableCell>
-                  <TableCell className="text-right">{project.items}</TableCell>
-                  <TableCell className="text-right">{project.totalHours.toFixed(1)}</TableCell>
-                  <TableCell className="text-right">
-                    ${(project.totalHours * project.shopRate).toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                  </TableCell>
-                  <TableCell>
-                    <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-green-100 text-green-800">
-                      {project.status}
-                    </span>
-                  </TableCell>
-                </TableRow>
+      {/* Main Table */}
+      <div className="mb-24 bg-[#0f1f35] border border-cyan-900/30 rounded-lg overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-[#0a1525] border-b border-cyan-900/30">
+              <tr className="text-cyan-400 text-xs uppercase">
+                <th className="p-3 text-left font-medium">
+                  <input type="checkbox" className="mr-2" />
+                </th>
+                <th className="p-3 text-left font-medium">DRAWING</th>
+                <th className="p-3 text-left font-medium">DETAIL</th>
+                <th className="p-3 text-left font-medium">ITEM</th>
+                <th className="p-3 text-left font-medium">SHAPE</th>
+                <th className="p-3 text-left font-medium">SIZE</th>
+                <th className="p-3 text-left font-medium">LENGTH</th>
+                <th className="p-3 text-left font-medium">QTY</th>
+                <th className="p-3 text-left font-medium">WEIGHT (LB)</th>
+                <th className="p-3 text-left font-medium">WELD (IN)</th>
+                <th className="p-3 text-left font-medium">MH TOTAL</th>
+                <th className="p-3 text-left font-medium">LABOR COST</th>
+                <th className="p-3 text-left font-medium">CATEGORY</th>
+                <th className="p-3 text-left font-medium">ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody className="text-gray-300">
+              {recentItems.map((item, idx) => (
+                <tr key={item.id} className="border-b border-cyan-900/20 hover:bg-cyan-950/20">
+                  <td className="p-3">
+                    <input type="checkbox" />
+                  </td>
+                  <td className="p-3 font-mono text-cyan-400">{item.drawing}</td>
+                  <td className="p-3">{item.detail}</td>
+                  <td className="p-3">Member</td>
+                  <td className="p-3">{item.shape}</td>
+                  <td className="p-3">{item.size}</td>
+                  <td className="p-3">{item.lengthFt ? `${item.lengthFt}'-0"` : '—'}</td>
+                  <td className="p-3">{item.qty}</td>
+                  <td className="p-3">{idx === 0 ? 468 : idx === 1 ? 20.4 : 5.1}</td>
+                  <td className="p-3">{idx === 0 ? 0 : idx === 1 ? 48 : 24}</td>
+                  <td className="p-3 font-mono">{(item.totalMin / 60).toFixed(2)}</td>
+                  <td className="p-3">${(item.totalMin / 60 * totals.avgRate).toFixed(2)}</td>
+                  <td className="p-3">{item.category}</td>
+                  <td className="p-3">
+                    <button className="px-3 py-1 bg-cyan-900/30 hover:bg-cyan-900/50 text-cyan-400 rounded text-xs">
+                      Breakdown
+                    </button>
+                  </td>
+                </tr>
               ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-      {/* Recent Items Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Items</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Drawing</TableHead>
-                <TableHead>Detail</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Shape</TableHead>
-                <TableHead>Size</TableHead>
-                <TableHead className="text-right">Qty</TableHead>
-                <TableHead className="text-right">Length (ft)</TableHead>
-                <TableHead className="text-right">Total Min</TableHead>
-                <TableHead className="text-right">Hours</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {recentItems.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell className="font-medium">{item.drawing}</TableCell>
-                  <TableCell>{item.detail}</TableCell>
-                  <TableCell>{item.category}</TableCell>
-                  <TableCell>{item.shape}</TableCell>
-                  <TableCell>{item.size}</TableCell>
-                  <TableCell className="text-right">{item.qty}</TableCell>
-                  <TableCell className="text-right">{item.lengthFt || '-'}</TableCell>
-                  <TableCell className="text-right">{item.totalMin}</TableCell>
-                  <TableCell className="text-right">{(item.totalMin / 60).toFixed(1)}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      {/* Bottom Transcript Section */}
+      <div className="fixed bottom-0 left-0 right-0 bg-[#0a1525] border-t border-cyan-900/30 p-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-2 gap-4">
+            {/* Left - Transcript */}
+            <div>
+              <div className="text-xs text-cyan-400 mb-2 tracking-wide">TRANSCRIPT</div>
+              <div className="space-y-2 text-sm text-gray-300 font-mono">
+                <div>[08:14] Drawing S2.4, detail 2.5, two W12x26 eighteen-foot zero...</div>
+                <div>[08:15] Base plate twelve by twelve by half, weld all around quarter fillet.</div>
+                <div>[08:16] Cap plate six by six by half, weld all around quarter fillet.</div>
+              </div>
+              <div className="text-xs text-gray-500 mt-2">1/1 select • R rephrase • X repeat</div>
+            </div>
+            
+            {/* Right - Controls */}
+            <div className="flex flex-col items-end justify-end gap-3">
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="bg-cyan-900/20 border-cyan-900/30 text-cyan-400 hover:bg-cyan-900/40"
+                >
+                  <Repeat className="mr-2 h-4 w-4" />
+                  Repeat
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="bg-cyan-900/20 border-cyan-900/30 text-cyan-400 hover:bg-cyan-900/40"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </Button>
+              </div>
+              <div className="flex items-center justify-center">
+                <button 
+                  onClick={handleVoiceInput}
+                  className={`w-20 h-20 rounded-full flex items-center justify-center transition-all ${
+                    isListening 
+                      ? 'bg-red-500/20 ring-4 ring-red-500/50 animate-pulse' 
+                      : 'bg-cyan-500/20 ring-4 ring-cyan-500/30 hover:ring-cyan-500/50'
+                  }`}
+                >
+                  <Mic className={`h-8 w-8 ${isListening ? 'text-red-400' : 'text-cyan-400'}`} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
