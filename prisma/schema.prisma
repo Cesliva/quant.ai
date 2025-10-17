@@ -1,0 +1,54 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Project {
+  id         String   @id @default(cuid())
+  name       String
+  client     String?
+  location   String?
+  shopRate   Float    @default(85)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  items      Item[]
+}
+
+model Item {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id])
+
+  drawing   String?
+  detail    String?
+  gridline  String?
+  category  String?
+  shape     String?
+  size      String?
+  lengthFt  Float?
+  qty       Int?
+
+  weightLb  Float?
+  weldIn    Float?
+
+  cutMin    Int?     @default(0)
+  fitMin    Int?     @default(0)
+  weldMin   Int?     @default(0)
+  grindMin  Int?     @default(0)
+  prepMin   Int?     @default(0)
+  paintMin  Int?     @default(0)
+  handleMin Int?     @default(0)
+  loadMin   Int?     @default(0)
+
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
