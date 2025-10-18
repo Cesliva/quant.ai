@@ -11,7 +11,15 @@ async function main() {
       name: 'Structural Steel - Building A',
       client: 'ABC Construction',
       location: 'Downtown',
+      projectType: 'Structural Steel',
+      estimateNumber: 'EST-2024-001',
+      estimator: 'John Smith',
+      contactName: 'Jane Doe',
+      contactEmail: 'jane.doe@abc-const.com',
+      contactPhone: '(555) 123-4567',
+      units: 'Imperial',
       shopRate: 95.0,
+      bidDueAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
       items: {
         create: [
           {
@@ -84,7 +92,15 @@ async function main() {
       name: 'Rebar Fabrication',
       client: 'XYZ Contractors',
       location: 'West Side',
+      projectType: 'Rebar',
+      estimateNumber: 'EST-2024-002',
+      estimator: 'Sarah Johnson',
+      contactName: 'Bob Wilson',
+      contactEmail: 'bob.wilson@xyz-cont.com',
+      contactPhone: '(555) 987-6543',
+      units: 'Imperial',
       shopRate: 85.0,
+      bidDueAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
       items: {
         create: [
           {

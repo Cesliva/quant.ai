@@ -2,19 +2,59 @@
 
 import { useState } from 'react'
 import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Input } from "@/components/ui/input"
+import BidCalendar from './BidCalendar'
 import { 
   Mic, 
   Trash2, 
   Repeat,
   Maximize2,
-  Minimize2
+  Minimize2,
+  Settings,
+  Copy,
+  AlertCircle
 } from "lucide-react"
+
+interface ProjectData {
+  id: string;
+  name: string;
+  client?: string;
+  location?: string;
+  projectType?: string;
+  estimateNumber?: string;
+  estimator?: string;
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  units?: string;
+  shopRate: number;
+  bidDueAt?: string | null;
+}
 
 export default function QuantHUDv2() {
   const [isListening, setIsListening] = useState(false)
   const [transcript, setTranscript] = useState("")
   const [density, setDensity] = useState<'compact' | 'comfortable'>('compact')
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  
+  // Current project (in real app, this would be loaded from API)
+  const [currentProject, setCurrentProject] = useState<ProjectData>({
+    id: 'demo-project-id',
+    name: 'Structural Steel - Building A',
+    client: 'ABC Construction',
+    location: 'Downtown',
+    projectType: 'Structural Steel',
+    estimateNumber: 'EST-2024-001',
+    estimator: 'John Smith',
+    contactName: 'Jane Doe',
+    contactEmail: 'jane.doe@abc-const.com',
+    contactPhone: '(555) 123-4567',
+    units: 'Imperial',
+    shopRate: 95,
+    bidDueAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString() // 2 days from now
+  })
   
   const [projects] = useState([
     {
@@ -85,6 +125,37 @@ export default function QuantHUDv2() {
     }
   }
 
+  const copyProjectInfo = () => {
+    const info = `Project: ${currentProject.name}
+Type: ${currentProject.projectType || '—'}
+Estimate #: ${currentProject.estimateNumber || '—'}
+GC: ${currentProject.client || '—'}
+Contact: ${currentProject.contactName || '—'} (${currentProject.contactEmail || '—'})
+Phone: ${currentProject.contactPhone || '—'}
+Location: ${currentProject.location || '—'}
+Bid Due: ${currentProject.bidDueAt ? new Date(currentProject.bidDueAt).toLocaleString() : '—'}`;
+    
+    navigator.clipboard.writeText(info);
+  }
+
+  const getBidDueStatus = () => {
+    if (!currentProject.bidDueAt) return null;
+    const dueDate = new Date(currentProject.bidDueAt);
+    const now = new Date();
+    const hoursUntilDue = (dueDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+    
+    if (hoursUntilDue < 0) return { color: 'text-red-400 bg-red-500/20', label: 'OVERDUE' };
+    if (hoursUntilDue <= 24) return { color: 'text-amber-400 bg-amber-500/20', label: '< 24 hrs' };
+    if (hoursUntilDue <= 48) return { color: 'text-yellow-400 bg-yellow-500/20', label: '< 48 hrs' };
+    return { color: 'text-cyan-400 bg-cyan-500/20', label: '' };
+  }
+
+  const saveProjectSettings = async (updatedProject: ProjectData) => {
+    // In real app: await fetch('/api/projects', { method: 'PATCH', body: JSON.stringify(updatedProject) })
+    setCurrentProject(updatedProject);
+    setSettingsOpen(false);
+  }
+
   const calculateTotals = () => {
     const totalItems = projects.reduce((sum, p) => sum + p.items, 0)
     const totalHours = projects.reduce((sum, p) => sum + p.totalHours, 0)
@@ -113,11 +184,80 @@ export default function QuantHUDv2() {
   const totals = calculateTotals()
   const padding = density === 'compact' ? 'p-2' : 'p-4'
 
+  const bidDueStatus = getBidDueStatus();
+
   return (
     <div className="min-h-screen bg-[#0a1525] text-gray-100 p-6">
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-2xl font-bold tracking-wider text-cyan-400">QUANT // HUD</h1>
+      </div>
+
+      {/* Project Admin Strip */}
+      <div className="mb-6 rounded-lg border border-cyan-900/30 bg-[#0f1f35] overflow-hidden">
+        <div className="bg-[#0a1525] px-4 py-2 border-b border-cyan-900/30">
+          <div className="text-xs text-cyan-400 tracking-wide font-semibold">PROJECT ADMIN</div>
+        </div>
+        <div className="p-4">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="space-y-2 text-sm flex-1">
+              <div className="text-cyan-200 font-medium text-lg">{currentProject.name}</div>
+              <div className="text-gray-400">
+                <span className="text-gray-500">GC:</span> {currentProject.client || '—'} · 
+                <span className="text-gray-500 ml-2">Contact:</span> {currentProject.contactName || '—'} 
+                ({currentProject.contactEmail || '—'}) · {currentProject.contactPhone || '—'}
+              </div>
+              <div className="text-gray-400">
+                <span className="text-gray-500">Type:</span> {currentProject.projectType || '—'} · 
+                <span className="text-gray-500 ml-2">Estimator:</span> {currentProject.estimator || '—'} · 
+                <span className="text-gray-500 ml-2">Est. #:</span> {currentProject.estimateNumber || '—'}
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="text-sm">
+                <div className="text-gray-500 text-xs mb-1">Bid Due:</div>
+                <div className={`px-3 py-1.5 rounded font-mono text-sm ${bidDueStatus?.color || 'text-cyan-400 bg-cyan-500/20'}`}>
+                  {currentProject.bidDueAt ? (
+                    <>
+                      {new Date(currentProject.bidDueAt).toLocaleString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit'
+                      })}
+                      {bidDueStatus?.label && (
+                        <span className="ml-2 text-xs">({bidDueStatus.label})</span>
+                      )}
+                    </>
+                  ) : '—'}
+                </div>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={copyProjectInfo}
+                className="bg-cyan-900/20 border-cyan-900/30 text-cyan-400 hover:bg-cyan-900/40"
+              >
+                <Copy className="mr-2 h-3 w-3" />
+                Copy Info
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setSettingsOpen(true)}
+                className="bg-cyan-900/20 border-cyan-900/30 text-cyan-400 hover:bg-cyan-900/40"
+              >
+                <Settings className="mr-2 h-3 w-3" />
+                Edit
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bid Calendar */}
+      <div className="mb-6">
+        <BidCalendar projectId={currentProject.id} />
       </div>
 
       {/* Live Estimate Bar */}
@@ -315,7 +455,195 @@ export default function QuantHUDv2() {
           </div>
         </div>
       </div>
+
+      {/* Project Settings Modal */}
+      <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+        <DialogContent className="max-w-4xl bg-[#0a1525] border-cyan-900/30 text-cyan-100">
+          <DialogHeader>
+            <DialogTitle className="text-cyan-400">Project Settings</DialogTitle>
+          </DialogHeader>
+          <ProjectSettingsForm 
+            project={currentProject} 
+            onSave={saveProjectSettings} 
+            onCancel={() => setSettingsOpen(false)} 
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   )
+}
+
+// Project Settings Form Component
+function ProjectSettingsForm({ 
+  project, 
+  onSave, 
+  onCancel 
+}: { 
+  project: ProjectData; 
+  onSave: (project: ProjectData) => void; 
+  onCancel: () => void;
+}) {
+  const [local, setLocal] = useState<ProjectData>(project);
+
+  const handleSave = () => {
+    onSave(local);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Identity */}
+      <div>
+        <h3 className="text-sm font-semibold text-cyan-400 mb-3">Project Identity</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label className="text-xs text-gray-400 mb-1 block">Project Name</label>
+            <Input
+              value={local.name}
+              onChange={e => setLocal(v => ({ ...v, name: e.target.value }))}
+              className="bg-[#0f1f35] border-cyan-900/30 text-cyan-100"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-gray-400 mb-1 block">Project Type</label>
+            <Input
+              value={local.projectType || ''}
+              onChange={e => setLocal(v => ({ ...v, projectType: e.target.value }))}
+              placeholder="e.g., Structural Steel"
+              className="bg-[#0f1f35] border-cyan-900/30 text-cyan-100"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-gray-400 mb-1 block">Estimate #</label>
+            <Input
+              value={local.estimateNumber || ''}
+              onChange={e => setLocal(v => ({ ...v, estimateNumber: e.target.value }))}
+              placeholder="EST-2024-001"
+              className="bg-[#0f1f35] border-cyan-900/30 text-cyan-100"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* GC + Contact */}
+      <div>
+        <h3 className="text-sm font-semibold text-cyan-400 mb-3">General Contractor & Contact</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label className="text-xs text-gray-400 mb-1 block">General Contractor (Client)</label>
+            <Input
+              value={local.client || ''}
+              onChange={e => setLocal(v => ({ ...v, client: e.target.value }))}
+              placeholder="ABC Construction"
+              className="bg-[#0f1f35] border-cyan-900/30 text-cyan-100"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-gray-400 mb-1 block">Contact Name</label>
+            <Input
+              value={local.contactName || ''}
+              onChange={e => setLocal(v => ({ ...v, contactName: e.target.value }))}
+              placeholder="John Doe"
+              className="bg-[#0f1f35] border-cyan-900/30 text-cyan-100"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-gray-400 mb-1 block">Contact Email</label>
+            <Input
+              type="email"
+              value={local.contactEmail || ''}
+              onChange={e => setLocal(v => ({ ...v, contactEmail: e.target.value }))}
+              placeholder="contact@gc.com"
+              className="bg-[#0f1f35] border-cyan-900/30 text-cyan-100"
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+          <div>
+            <label className="text-xs text-gray-400 mb-1 block">Contact Phone</label>
+            <Input
+              value={local.contactPhone || ''}
+              onChange={e => setLocal(v => ({ ...v, contactPhone: e.target.value }))}
+              placeholder="(555) 123-4567"
+              className="bg-[#0f1f35] border-cyan-900/30 text-cyan-100"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-gray-400 mb-1 block">Location</label>
+            <Input
+              value={local.location || ''}
+              onChange={e => setLocal(v => ({ ...v, location: e.target.value }))}
+              placeholder="Downtown"
+              className="bg-[#0f1f35] border-cyan-900/30 text-cyan-100"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-gray-400 mb-1 block">Estimator</label>
+            <Input
+              value={local.estimator || ''}
+              onChange={e => setLocal(v => ({ ...v, estimator: e.target.value }))}
+              placeholder="Your Name"
+              className="bg-[#0f1f35] border-cyan-900/30 text-cyan-100"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Rates & Deadlines */}
+      <div>
+        <h3 className="text-sm font-semibold text-cyan-400 mb-3">Rates & Deadlines</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label className="text-xs text-gray-400 mb-1 block">Shop Rate ($/hr)</label>
+            <Input
+              type="number"
+              value={local.shopRate}
+              onChange={e => setLocal(v => ({ ...v, shopRate: parseFloat(e.target.value) || 0 }))}
+              className="bg-[#0f1f35] border-cyan-900/30 text-cyan-100"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-gray-400 mb-1 block">Units</label>
+            <select
+              value={local.units || 'Imperial'}
+              onChange={e => setLocal(v => ({ ...v, units: e.target.value }))}
+              className="w-full px-3 py-2 rounded bg-[#0f1f35] border border-cyan-900/30 text-cyan-100 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            >
+              <option value="Imperial">Imperial</option>
+              <option value="Metric">Metric</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs text-gray-400 mb-1 block">Bid Due Date & Time</label>
+            <Input
+              type="datetime-local"
+              value={local.bidDueAt ? new Date(local.bidDueAt).toISOString().slice(0, 16) : ''}
+              onChange={e => setLocal(v => ({ 
+                ...v, 
+                bidDueAt: e.target.value ? new Date(e.target.value).toISOString() : null 
+              }))}
+              className="bg-[#0f1f35] border-cyan-900/30 text-cyan-100"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="flex justify-end gap-3 pt-4 border-t border-cyan-900/30">
+        <Button
+          variant="outline"
+          onClick={onCancel}
+          className="bg-transparent border-cyan-900/30 text-gray-400 hover:bg-cyan-900/20"
+        >
+          Cancel
+        </Button>
+        <Button
+          onClick={handleSave}
+          className="bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/30"
+        >
+          Save Settings
+        </Button>
+      </div>
+    </div>
+  );
 }
 

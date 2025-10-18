@@ -13,12 +13,24 @@ generator client {
 model Project {
   id         String   @id @default(cuid())
   name       String
-  client     String?
+  client     String?      // General Contractor / Owner
   location   String?
-  shopRate   Float    @default(85)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  items      Item[]
+  projectType String?     // e.g., Tilt-up, TI, Structural, Misc Steel
+  estimateNumber String?  // internal estimate or bid #
+  estimator  String?      // person doing estimate
+  contactName  String?    // GC contact
+  contactEmail String?
+  contactPhone String?
+
+  units     String?   @default("Imperial")
+  shopRate  Float     @default(90)
+
+  bidDueAt  DateTime?       // bid due date/time
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items     Item[]
+  bidEvents BidEvent[]
 }
 
 model Item {
@@ -50,5 +62,18 @@ model Item {
   notes     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model BidEvent {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  title       String
+  notes       String?
+  startsAt    DateTime
+  endsAt      DateTime?
+  allDay      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
