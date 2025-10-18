@@ -20,20 +20,19 @@ export default function BidCalendar({ projectId }: { projectId: string }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (projectId) {
-      loadEvents();
+    async function fetchEvents() {
+      if (projectId) {
+        try {
+          const res = await fetch(`/api/bid-events?projectId=${projectId}`);
+          const data = await res.json();
+          setEvents(data.events || []);
+        } catch (error) {
+          console.error('Failed to load events:', error);
+        }
+      }
     }
+    fetchEvents();
   }, [projectId]);
-
-  async function loadEvents() {
-    try {
-      const res = await fetch(`/api/bid-events?projectId=${projectId}`);
-      const data = await res.json();
-      setEvents(data.events || []);
-    } catch (error) {
-      console.error('Failed to load events:', error);
-    }
-  }
 
   async function addEvent() {
     if (!draft.title || !draft.startsAt) return;

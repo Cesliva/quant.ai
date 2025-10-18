@@ -13,8 +13,7 @@ import {
   Maximize2,
   Minimize2,
   Settings,
-  Copy,
-  AlertCircle
+  Copy
 } from "lucide-react"
 
 interface ProjectData {
@@ -35,7 +34,6 @@ interface ProjectData {
 
 export default function QuantHUDv2() {
   const [isListening, setIsListening] = useState(false)
-  const [transcript, setTranscript] = useState("")
   const [density, setDensity] = useState<'compact' | 'comfortable'>('compact')
   const [settingsOpen, setSettingsOpen] = useState(false)
   
@@ -118,11 +116,6 @@ export default function QuantHUDv2() {
   const handleVoiceInput = () => {
     setIsListening(!isListening)
     // Voice recognition would be implemented here
-    if (!isListening) {
-      setTranscript("Listening...")
-    } else {
-      setTranscript("")
-    }
   }
 
   const copyProjectInfo = () => {
